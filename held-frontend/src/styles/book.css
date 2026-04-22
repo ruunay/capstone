@@ -1,0 +1,19 @@
+.journal-book {
+  height: 400px;
+  position: relative;
+}
+
+.book-cover {
+  background: teal;
+  color: white;
+  height: 100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+}
+
+.pages {
+  background: white;
+  padding: 20px;
+}

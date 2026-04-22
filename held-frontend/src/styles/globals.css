@@ -1,0 +1,499 @@
+/* -------------------------------------------------------
+   FONTS
+------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* -------------------------------------------------------
+   ROOT THEME — YOUR NEW PALETTE
+------------------------------------------------------- */
+:root {
+  --pink: #ffb6d3;
+  --pink-soft: rgba(255, 182, 211, 0.25);
+
+  --sage: #cce9d6;
+  --sage-soft: rgba(204, 233, 214, 0.25);
+
+  --grey: #dadbda;
+  --grey-soft: rgba(218, 219, 218, 0.35);
+
+  --white: #ffffff;
+
+  --text-dark: #1f1b2e;
+  --text-muted: #7b7288;
+
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 12px;
+
+  --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --shadow-lift: 0 18px 40px rgba(0, 0, 0, 0.12);
+
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.25s ease;
+}
+
+/* -------------------------------------------------------
+   RESET
+------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--white);
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* -------------------------------------------------------
+   GLOBAL PAGE LAYOUT
+------------------------------------------------------- */
+.page {
+  min-height: 100vh;
+  padding: 32px 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* -------------------------------------------------------
+   GLASS CARDS
+------------------------------------------------------- */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(18px);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-soft);
+  padding: 20px 18px;
+}
+
+/* -------------------------------------------------------
+   BUTTONS
+------------------------------------------------------- */
+.btn {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-hero,
+.btn-auth {
+  background: linear-gradient(135deg, var(--pink), var(--sage));
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(255, 182, 211, 0.4);
+}
+
+.btn-hero:hover,
+.btn-auth:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--grey-soft);
+  color: var(--text-dark);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.btn-ghost {
+  background: transparent;
+  padding: 6px 10px;
+  color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+}
+
+/* -------------------------------------------------------
+   INPUTS
+------------------------------------------------------- */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-soft);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 1px var(--pink-soft);
+}
+
+/* -------------------------------------------------------
+   AUTH PAGES (Login + Register)
+------------------------------------------------------- */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--pink-soft), var(--sage-soft));
+}
+
+.auth-card {
+  max-width: 420px;
+  padding: 32px 28px;
+  border-radius: var(--radius-lg);
+}
+
+.auth-logo-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pink), var(--sage));
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.auth-logo {
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-tagline {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* -------------------------------------------------------
+   DASHBOARD — Pinterest Luxury Girl
+------------------------------------------------------- */
+.dashboard-hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.hero-image-wrapper {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 182, 211, 0.25),
+    rgba(204, 233, 214, 0.25)
+  );
+}
+
+.hero-content {
+  padding: 28px 24px;
+  border-radius: var(--radius-lg);
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+/* Feature Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+}
+
+.feature-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.feature-image-wrapper {
+  height: 140px;
+  overflow: hidden;
+}
+
+.feature-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feature-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  margin: 12px 14px 4px;
+}
+
+.feature-description {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 14px 12px;
+}
+
+/* -------------------------------------------------------
+   COMMUNITY — Pinterest Masonry Grid
+------------------------------------------------------- */
+.community-masonry {
+  column-count: 3;
+  column-gap: 18px;
+  margin-bottom: 32px;
+}
+
+.community-card {
+  break-inside: avoid;
+  margin-bottom: 18px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 0;
+}
+
+.community-image-wrapper {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.community-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.community-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.6)
+  );
+}
+
+.community-card-content {
+  padding: 14px 16px;
+}
+
+.community-tag {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.community-tag.prompt {
+  background: var(--pink-soft);
+  color: var(--text-dark);
+}
+
+.community-tag.moodboard {
+  background: var(--sage-soft);
+  color: var(--text-dark);
+}
+
+.community-text {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.community-author {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* -------------------------------------------------------
+   AFFIRMATIONS PORTAL
+------------------------------------------------------- */
+.daily-affirmation {
+  margin-bottom: 28px;
+  padding: 24px 20px;
+  border-radius: var(--radius-lg);
+}
+
+.daily-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.daily-text {
+  font-size: 16px;
+  color: var(--text-dark);
+  font-family: 'Playfair Display', serif;
+}
+
+/* Nature Sounds */
+.sound-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.sound-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--grey-soft);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.sound-btn.active {
+  background: var(--pink);
+  color: #fff;
+  border-color: var(--pink);
+}
+
+/* Affirmation Masonry */
+.affirmation-masonry {
+  column-count: 3;
+  column-gap: 18px;
+}
+
+.affirmation-card {
+  break-inside: avoid;
+  margin-bottom: 18px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.affirmation-image-wrapper {
+  height: 160px;
+  overflow: hidden;
+}
+
+.affirmation-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.affirmation-text {
+  padding: 14px 16px;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+}
+
+/* Nature Visuals */
+.nature-visuals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.nature-card {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  padding: 0;
+}
+
+.nature-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.nature-label {
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+/* -------------------------------------------------------
+   HOVER LIFT
+------------------------------------------------------- */
+.hover-lift {
+  transition: var(--transition-fast);
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* -------------------------------------------------------
+   ANIMATIONS
+------------------------------------------------------- */
+.fade-in {
+  animation: fadeInSoft 0.6s ease-out;
+}
+
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------- */
+@media (max-width: 768px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .community-masonry,
+  .affirmation-masonry {
+    column-count: 1;
+  }
+}

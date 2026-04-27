@@ -4,12 +4,15 @@ import jakarta.validation.Valid;
 import org.rayanali.capstone.dto.JournalEntryDto;
 import org.rayanali.capstone.entity.JournalEntry;
 import org.rayanali.capstone.service.JournalEntryService;
+import org.rayanali.capstone.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,14 +22,28 @@ import java.util.stream.Collectors;
 public class JournalEntryController {
 
     private final JournalEntryService journalEntryService;
+    private final UserService userService;
 
-    public JournalEntryController(JournalEntryService journalEntryService) {
+    public JournalEntryController(JournalEntryService journalEntryService, UserService userService) {
         this.journalEntryService = journalEntryService;
+        this.userService = userService;
+    }
+
+    private Long resolveUserId() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userService.getUserByEmail(email).getId();
+    }
+
+    private boolean isAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     @GetMapping
     public ResponseEntity<List<JournalEntryDto>> getAllEntries() {
-        List<JournalEntryDto> entries = journalEntryService.getAllEntries()
+        Long userId = resolveUserId();
+        List<JournalEntryDto> entries = journalEntryService.getEntriesByUser(userId)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -40,7 +57,8 @@ public class JournalEntryController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<JournalEntryDto>> getEntriesByUser(@PathVariable Long userId) {
-        List<JournalEntryDto> entries = journalEntryService.getEntriesByUser(userId)
+        Long tokenUserId = resolveUserId();
+        List<JournalEntryDto> entries = journalEntryService.getEntriesByUser(tokenUserId)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -52,9 +70,10 @@ public class JournalEntryController {
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        Long tokenUserId = resolveUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<JournalEntryDto> entries = journalEntryService
-                .getEntriesByUserPaginated(userId, pageable)
+                .getEntriesByUserPaginated(tokenUserId, pageable)
                 .map(this::convertToDTO);
         return ResponseEntity.ok(entries);
     }
@@ -72,8 +91,9 @@ public class JournalEntryController {
     public ResponseEntity<JournalEntryDto> createEntry(
             @PathVariable Long userId,
             @Valid @RequestBody JournalEntryDto journalEntryDto) {
+        Long tokenUserId = resolveUserId();
         JournalEntry entry = convertToEntity(journalEntryDto);
-        JournalEntry saved = journalEntryService.createEntry(userId, entry);
+        JournalEntry saved = journalEntryService.createEntry(tokenUserId, entry);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(saved));
     }
 
@@ -81,13 +101,14 @@ public class JournalEntryController {
     public ResponseEntity<JournalEntryDto> updateEntry(
             @PathVariable Long id,
             @Valid @RequestBody JournalEntryDto journalEntryDto) {
-        JournalEntry updated = journalEntryService.updateEntry(id, convertToEntity(journalEntryDto));
+        JournalEntry updated = journalEntryService.updateEntry(
+                id, convertToEntity(journalEntryDto), resolveUserId(), isAdmin());
         return ResponseEntity.ok(convertToDTO(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEntry(@PathVariable Long id) {
-        journalEntryService.deleteEntry(id);
+        journalEntryService.deleteEntry(id, resolveUserId(), isAdmin());
         return ResponseEntity.noContent().build();
     }
 

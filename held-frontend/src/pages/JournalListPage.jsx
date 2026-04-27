@@ -1,83 +1,111 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import api from "../services/api.js";
 
+function normalizeEntry(entry) {
+  return {
+    id: entry.id,
+    title: entry.title || "Untitled Entry",
+    content: entry.content || "",
+    mood: entry.mood ?? entry.moodType ?? "neutral",
+    date: entry.date ?? entry.createdAt ?? null,
+  };
+}
+
 export default function JournalListPage() {
+  const { token, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    let ignore = false;
+
     api
-      .get("/api/journal-entries/user/1")
-      .then((res) => setEntries(res.data))
-      .catch(() => setError("Could not load your entries."))
-      .finally(() => setLoading(false));
-  }, []);
+      .get("/api/journal")
+      .then((res) => {
+        if (ignore) return;
+        const normalized = Array.isArray(res.data)
+          ? res.data.map(normalizeEntry)
+          : [];
+        setEntries(normalized);
+      })
+      .catch((err) => {
+        if (ignore) return;
+        setError(
+          err?.response?.data?.message ||
+            "We could not load your journal entries right now."
+        );
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
 
-  if (loading)
-    return <div className="loading page fade-in">Loading your entries…</div>;
+    return () => {
+      ignore = true;
+    };
+  }, [authLoading, token, navigate, location.state?.refreshJournalList]);
 
-  if (error)
-    return <div className="page fade-in"><div className="error-msg">{error}</div></div>;
+  if (loading) return <div className="loading">Loading your entries...</div>;
+
+  if (error) {
+    return (
+      <div className="page fade-in">
+        <div className="page-header">
+          <h2>My Journal</h2>
+          <Link to="/journal/new">
+            <button className="btn">+ New Entry</button>
+          </Link>
+        </div>
+        <div className="error-msg">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="page journal-list-page theme-soft-pink fade-in">
-      <div className="journal-background-blur" />
-
-      {/* HEADER */}
-      <div className="page-header journal-header">
-        <div>
-          <h2 className="journal-title">My Journal</h2>
-          <p className="journal-subtitle">
-            A soft archive of your thoughts, feelings, and growth.
-          </p>
-        </div>
-
+    <div className="page fade-in">
+      <div className="page-header">
+        <h2>My Journal</h2>
         <Link to="/journal/new">
-          <button className="btn btn-auth">+ New Entry</button>
+          <button className="btn">+ New Entry</button>
         </Link>
       </div>
 
-      {/* EMPTY STATE */}
       {entries.length === 0 ? (
-        <div className="empty-state glass-card fade-in">
-          <h3 className="empty-title">Your journal is waiting for you</h3>
-          <p className="empty-text">
-            You haven’t written anything yet — your first entry could be the
-            start of something beautiful.
-          </p>
+        <div className="empty-state">
+          <p>You have not written any entries yet.</p>
           <Link to="/journal/new">
-            <button className="btn btn-auth">Write your first entry</button>
+            <button className="btn">Write your first entry</button>
           </Link>
         </div>
       ) : (
-        /* ENTRIES GRID */
-        <div className="entries-grid journal-grid fade-in">
+        <div className="entries-grid">
           {entries.map((entry) => (
             <Link
               to={`/journal/entry/${entry.id}`}
               key={entry.id}
               className="entry-card-link"
             >
-              <div className="card entry-card glass-card hover-lift">
-                <div className="entry-mood-tag">{entry.moodType}</div>
-
-                <h4 className="entry-title">
-                  {entry.title || "Untitled Entry"}
-                </h4>
-
-                <p className="entry-preview">
-                  {entry.content.slice(0, 140)}…
+              <div className={`card entry-card mood-${entry.mood}`}>
+                <div className="entry-mood-tag">{entry.mood}</div>
+                <h4>{entry.title}</h4>
+                <p>
+                  {entry.content.length > 120
+                    ? `${entry.content.slice(0, 120)}...`
+                    : entry.content}
                 </p>
-
                 <div className="entry-meta">
-                  <span className="entry-intensity">
-                    Intensity: {entry.moodIntensity}/10
-                  </span>
-                  <span className="entry-date">
-                    {new Date(entry.createdAt).toLocaleDateString()}
-                  </span>
+                  <span>{entry.date ? new Date(entry.date).toLocaleDateString() : ""}</span>
                 </div>
               </div>
             </Link>

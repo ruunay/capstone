@@ -1,0 +1,491 @@
+{
+  "info": {
+    "_postman_id": "held-api-2024",
+    "name": "Held API",
+    "description": "Complete API collection for the Held digital journaling application. Set the `token` variable after login — all protected requests will use it automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Backend base URL"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT — auto-filled by login/register test scripts"
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "type": "string",
+      "description": "Logged-in user ID — auto-filled by login/register"
+    },
+    {
+      "key": "entryId",
+      "value": "1",
+      "type": "string",
+      "description": "Journal entry ID — auto-filled when an entry is created"
+    },
+    {
+      "key": "promptId",
+      "value": "1",
+      "type": "string",
+      "description": "Prompt ID — set manually after fetching prompts"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Public endpoints — no token required",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token returned', () => pm.expect(res.token).to.be.a('string'));",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('token', res.token);",
+                  "    pm.collectionVariables.set('userId', String(res.id));",
+                  "    console.log('Token saved. userId =', res.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@held.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Create a new account. Automatically saves token and userId collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token returned', () => pm.expect(res.token).to.be.a('string'));",
+                  "pm.test('User ID present', () => pm.expect(res.id).to.be.a('number'));",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('token', res.token);",
+                  "    pm.collectionVariables.set('userId', String(res.id));",
+                  "    console.log('Token saved. userId =', res.id, '| role =', res.role);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@held.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login and receive a JWT. Token and userId are saved automatically."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Journal Entries",
+      "description": "All endpoints require Bearer token",
+      "item": [
+        {
+          "name": "Create Journal Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test('Entry has ID', () => pm.expect(res.id).to.be.a('number'));",
+                  "if (res.id) {",
+                  "    pm.collectionVariables.set('entryId', String(res.id));",
+                  "    console.log('entryId saved:', res.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My First Entry\",\n  \"content\": \"Today I felt grateful for the small things — a warm cup of tea, sunlight through the window, and a quiet morning.\",\n  \"moodType\": \"grateful\",\n  \"moodIntensity\": 8\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/journal-entries/user/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "journal-entries", "user", "{{userId}}"]
+            },
+            "description": "Create a new journal entry for the logged-in user. Saves entryId automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Entries for User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/journal-entries/user/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "journal-entries", "user", "{{userId}}"]
+            },
+            "description": "Get all journal entries for a specific user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Entry by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Entry has title', () => pm.expect(pm.response.json()).to.have.property('title'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/journal-entries/{{entryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "journal-entries", "{{entryId}}"]
+            },
+            "description": "Get a single journal entry by its ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Journal Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Title updated', () => pm.expect(pm.response.json().title).to.equal('Updated Entry Title'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Entry Title\",\n  \"content\": \"I have reflected more and wanted to add to this entry. Growth feels slow but it is always happening.\",\n  \"moodType\": \"hopeful\",\n  \"moodIntensity\": 7\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/journal-entries/{{entryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "journal-entries", "{{entryId}}"]
+            },
+            "description": "Update an existing journal entry."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Journal Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 204', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/journal-entries/{{entryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "journal-entries", "{{entryId}}"]
+            },
+            "description": "Delete a journal entry by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Prompts",
+      "description": "GET requires user token. POST and DELETE require ADMIN token.",
+      "item": [
+        {
+          "name": "Get All Prompts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "const prompts = pm.response.json();",
+                  "if (prompts.length > 0) {",
+                  "    pm.collectionVariables.set('promptId', String(prompts[0].id));",
+                  "    console.log('promptId saved:', prompts[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/prompts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "prompts"]
+            },
+            "description": "Get all community prompts. Saves first promptId automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Prompt (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.collectionVariables.set('promptId', String(res.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is one thing you are proud of today?\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/prompts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "prompts"]
+            },
+            "description": "Create a new community prompt. Requires ADMIN token."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Prompt (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 204', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/prompts/{{promptId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "prompts", "{{promptId}}"]
+            },
+            "description": "Delete a prompt by ID. Requires ADMIN token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Responses",
+      "description": "All endpoints require Bearer token",
+      "item": [
+        {
+          "name": "Create Entry Response",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entryId\": {{entryId}},\n  \"promptId\": {{promptId}},\n  \"responseText\": \"Reflecting on this prompt helped me realise how much I have grown. I am proud of choosing myself today.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/responses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "responses"]
+            },
+            "description": "Create a reflection response linking a journal entry to a prompt."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Responses for Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/responses/entry/{{entryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "responses", "entry", "{{entryId}}"]
+            },
+            "description": "Get all reflection responses for a specific journal entry."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "All endpoints require ADMIN Bearer token",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "console.log('Total users:', pm.response.json().length);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Get all registered users. Requires ADMIN token."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 204', () => pm.expect(pm.response.code).to.be.oneOf([200, 204]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "{{userId}}"]
+            },
+            "description": "Delete a user by ID. Requires ADMIN token. Be careful — use a test userId."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

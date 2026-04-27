@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Held — Entity Relationship Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #1a0a12;
+  --text:      #f0e8f0;
+  --muted:     rgba(240,232,240,0.42);
+  --pink:      #ffb6d3;
+  --green:     #cce9d6;
+  --gold:      #c9a96e;
+  --serif:     'Cormorant Garamond', Georgia, serif;
+  --sans:      'DM Sans', system-ui, sans-serif;
+  --mono:      'DM Mono', 'Courier New', monospace;
+  /* SVG table colours */
+  --tbl-bg:    #200d17;
+  --tbl-hdr:   #2a1020;
+  --pk-bg:     rgba(201,169,110,0.12);
+  --fk-bg:     rgba(204,233,214,0.10);
+  --tbl-border: rgba(255,182,211,0.28);
+  --row-line:  rgba(255,182,211,0.10);
+  --rel-line:  rgba(255,182,211,0.55);
+}
+body.light {
+  --bg:        #f8f4f6;
+  --text:      #1a0a12;
+  --muted:     rgba(26,10,18,0.5);
+  --pink:      #c24e78;
+  --green:     #2d7a4a;
+  --gold:      #8a5f1a;
+  --tbl-bg:    #ffffff;
+  --tbl-hdr:   #f0e8ee;
+  --pk-bg:     rgba(201,169,110,0.15);
+  --fk-bg:     rgba(45,122,74,0.10);
+  --tbl-border: rgba(26,10,18,0.2);
+  --row-line:  rgba(26,10,18,0.08);
+  --rel-line:  rgba(194,78,120,0.55);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh; transition:background .4s,color .4s; }
+
+.page { max-width:1200px; margin:0 auto; padding:3rem 2rem 5rem; }
+
+#toggle {
+  position:fixed; top:1.2rem; right:1.5rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,182,211,0.22);
+  color:var(--pink); font-family:var(--sans); font-size:0.72rem;
+  letter-spacing:0.08em; padding:0.45rem 0.9rem; border-radius:20px;
+  cursor:pointer; backdrop-filter:blur(10px); transition:all .3s; z-index:100;
+}
+
+.eyebrow { font-size:0.65rem; letter-spacing:0.28em; color:var(--pink); opacity:.5; text-transform:uppercase; text-align:center; margin-bottom:0.6rem; }
+h1 { font-family:var(--serif); font-size:clamp(1.8rem,3.5vw,2.8rem); font-weight:600; color:var(--pink); text-align:center; margin-bottom:0.4rem; }
+.subtitle { font-size:0.82rem; color:var(--muted); text-align:center; margin-bottom:0.8rem; }
+
+.legend { display:flex; justify-content:center; gap:1.5rem; margin-bottom:2.5rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.65rem; color:var(--muted); letter-spacing:0.05em; }
+.legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+
+.erd-wrap { width:100%; overflow-x:auto; border-radius:16px; border:1px solid rgba(255,182,211,0.12); background:rgba(255,255,255,0.015); padding:1.5rem; }
+
+svg.erd { width:100%; height:auto; display:block; }
+
+footer { text-align:center; margin-top:2.5rem; font-size:0.6rem; color:var(--muted); opacity:.55; letter-spacing:0.08em; }
+
+@media print {
+  body { background:#fff !important; color:#1a0a12 !important; }
+  #toggle { display:none; }
+  .erd-wrap { border:1px solid #ddd !important; background:#fff !important; }
+}
+</style>
+</head>
+<body>
+<button id="toggle">◐ Light Mode</button>
+
+<div class="page">
+  <p class="eyebrow">Capstone Project · 2026</p>
+  <h1>Held — Entity Relationship Diagram</h1>
+  <p class="subtitle">MySQL 8.0 · Spring Data JPA · Hibernate</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(201,169,110,0.5);border:1px solid #c9a96e"></div>Primary Key</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(204,233,214,0.4);border:1px solid #cce9d6"></div>Foreign Key</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,182,211,0.08);border:1px solid rgba(255,182,211,0.3)"></div>Column</div>
+    <div class="legend-item">
+      <svg width="36" height="14" viewBox="0 0 36 14" fill="none">
+        <line x1="2" y1="7" x2="30" y2="7" stroke="#ffb6d3" stroke-width="1.4" stroke-dasharray="4 2"/>
+        <line x1="2" y1="3" x2="2" y2="11" stroke="#ffb6d3" stroke-width="1.4"/>
+        <path d="M22,7 L30,3 M22,7 L30,7 M22,7 L30,11" stroke="#ffb6d3" stroke-width="1.4" fill="none"/>
+      </svg>
+      1-to-many (crow's foot)
+    </div>
+  </div>
+
+  <div class="erd-wrap">
+  <!--
+    Layout (viewBox 0 0 1140 650):
+      users:           x=20,  y=60,  w=255
+      journal_entries: x=430, y=60,  w=295
+      entry_responses: x=430, y=410, w=295
+      prompts:         x=840, y=410, w=260
+
+    Row h=30, header h=44
+    users:           bottom y = 60+44+8×30  = 344
+    journal_entries: bottom y = 60+44+8×30  = 344
+    entry_responses: bottom y = 410+44+5×30 = 604
+    prompts:         bottom y = 410+44+4×30 = 574
+
+    Relationship routes:
+    1) users(1) → journal_entries(N)
+       Horizontal: (275,202) → (430,202)   [mid-height of tables at y~202]
+       "1" bar at x=275, "N" crow at x=430
+
+    2) journal_entries(1) → entry_responses(N)
+       Vertical: (577,344) → (577,410)
+       "1" bar at y=344, "N" crow at y=410
+
+    3) prompts(1) → entry_responses(N)
+       L-shape: (840,487) → (790,487) → (790,567) → (725,567)
+       "1" bar at x=840, "N" crow at x=725
+  -->
+  <svg class="erd" viewBox="0 0 1140 650" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- dark theme fills (overridden in JS for light) -->
+      <style>
+        .tbl-bg    { fill: #200d17; }
+        .tbl-hdr   { fill: #2a1020; }
+        .pk-bg     { fill: rgba(201,169,110,0.12); }
+        .fk-bg     { fill: rgba(204,233,214,0.10); }
+        .tbl-border{ stroke: rgba(255,182,211,0.28); }
+        .row-sep   { stroke: rgba(255,182,211,0.10); }
+        .rel-line  { stroke: rgba(255,182,211,0.55); }
+        .col-name  { fill: #f0e8f0; font-family:'DM Mono','Courier New',monospace; font-size:11.5px; }
+        .col-type  { fill: rgba(240,232,240,0.38); font-family:'DM Mono','Courier New',monospace; font-size:10.5px; }
+        .col-badge { font-family:'DM Sans',sans-serif; font-size:9px; font-weight:600; }
+        .pk-badge  { fill: #c9a96e; }
+        .fk-badge  { fill: #cce9d6; }
+        .tbl-title { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; font-weight:600; }
+        .tbl-schema{ font-family:'DM Sans',sans-serif; font-size:9.5px; }
+        .hdr-schema{ fill: rgba(240,232,240,0.4); }
+        body.light .tbl-bg     { fill: #ffffff; }
+        body.light .tbl-hdr    { fill: #f0e8ee; }
+        body.light .pk-bg      { fill: rgba(201,169,110,0.14); }
+        body.light .fk-bg      { fill: rgba(45,122,74,0.09); }
+        body.light .tbl-border { stroke: rgba(26,10,18,0.22); }
+        body.light .row-sep    { stroke: rgba(26,10,18,0.08); }
+        body.light .rel-line   { stroke: rgba(194,78,120,0.55); }
+        body.light .col-name   { fill: #1a0a12; }
+        body.light .col-type   { fill: rgba(26,10,18,0.45); }
+        body.light .hdr-schema { fill: rgba(26,10,18,0.42); }
+      </style>
+    </defs>
+
+    <!-- ══════════════════════════════════════════════════
+         TABLE: users   x=20 y=60 w=255
+         Rows: id, username, email, password, role, created_at, reset_token, reset_token_expiry
+    ═══════════════════════════════════════════════════ -->
+    <g id="users">
+      <!-- card background -->
+      <rect x="20" y="60" width="255" height="284" rx="8" class="tbl-bg tbl-border" stroke-width="1"/>
+      <!-- header -->
+      <rect x="20" y="60" width="255" height="44" rx="8" class="tbl-hdr tbl-border" stroke-width="1"/>
+      <rect x="20" y="88"  width="255" height="16" class="tbl-hdr"/><!-- square bottom corners -->
+      <text x="36" y="79" class="tbl-title" fill="#ffb6d3">users</text>
+      <text x="36" y="94" class="tbl-schema hdr-schema">MySQL · InnoDB</text>
+
+      <!-- row separators -->
+      <line x1="20" y1="104" x2="275" y2="104" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="134" x2="275" y2="134" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="164" x2="275" y2="164" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="194" x2="275" y2="194" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="224" x2="275" y2="224" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="254" x2="275" y2="254" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="284" x2="275" y2="284" class="row-sep" stroke-width="1"/>
+      <line x1="20" y1="314" x2="275" y2="314" class="row-sep" stroke-width="1"/>
+
+      <!-- row 1: id PK -->
+      <rect x="20" y="104" width="255" height="30" class="pk-bg"/>
+      <text x="36"  y="124" class="col-name">id</text>
+      <text x="90"  y="124" class="col-type">BIGINT</text>
+      <text x="200" y="124" class="col-badge pk-badge">PK · AI</text>
+
+      <!-- row 2: username -->
+      <text x="36"  y="154" class="col-name">username</text>
+      <text x="90"  y="154" class="col-type">VARCHAR(50)</text>
+      <text x="200" y="154" class="col-badge" fill="rgba(240,232,240,0.3)">NN · UQ</text>
+
+      <!-- row 3: email -->
+      <text x="36"  y="184" class="col-name">email</text>
+      <text x="90"  y="184" class="col-type">VARCHAR(100)</text>
+      <text x="200" y="184" class="col-badge" fill="rgba(240,232,240,0.3)">NN · UQ</text>
+
+      <!-- row 4: password -->
+      <text x="36"  y="214" class="col-name">password</text>
+      <text x="90"  y="214" class="col-type">VARCHAR(255)</text>
+      <text x="200" y="214" class="col-badge" fill="rgba(240,232,240,0.3)">NN</text>
+
+      <!-- row 5: role -->
+      <text x="36"  y="244" class="col-name">role</text>
+      <text x="90"  y="244" class="col-type">VARCHAR(20)</text>
+      <text x="200" y="244" class="col-badge" fill="rgba(240,232,240,0.3)">'USER'</text>
+
+      <!-- row 6: created_at -->
+      <text x="36"  y="274" class="col-name">created_at</text>
+      <text x="90"  y="274" class="col-type">TIMESTAMP</text>
+
+      <!-- row 7: reset_token -->
+      <text x="36"  y="304" class="col-name">reset_token</text>
+      <text x="90"  y="304" class="col-type">VARCHAR</text>
+
+      <!-- row 8: reset_token_expiry -->
+      <text x="36"  y="334" class="col-name">reset_token_expiry</text>
+      <text x="192" y="334" class="col-type">TIMESTAMP</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════════════
+         TABLE: journal_entries   x=430 y=60 w=295
+         Rows: id, title, content, mood_type, mood_intensity, created_at, updated_at, user_id FK
+    ═══════════════════════════════════════════════════ -->
+    <g id="journal_entries">
+      <rect x="430" y="60"  width="295" height="284" rx="8" class="tbl-bg tbl-border" stroke-width="1"/>
+      <rect x="430" y="60"  width="295" height="44"  rx="8" class="tbl-hdr tbl-border" stroke-width="1"/>
+      <rect x="430" y="88"  width="295" height="16"       class="tbl-hdr"/>
+      <text x="446" y="79"  class="tbl-title" fill="#ffb6d3">journal_entries</text>
+      <text x="446" y="94"  class="tbl-schema hdr-schema">MySQL · InnoDB</text>
+
+      <line x1="430" y1="104" x2="725" y2="104" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="134" x2="725" y2="134" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="164" x2="725" y2="164" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="194" x2="725" y2="194" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="224" x2="725" y2="224" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="254" x2="725" y2="254" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="284" x2="725" y2="284" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="314" x2="725" y2="314" class="row-sep" stroke-width="1"/>
+
+      <!-- row 1: id PK -->
+      <rect x="430" y="104" width="295" height="30" class="pk-bg"/>
+      <text x="446" y="124" class="col-name">id</text>
+      <text x="490" y="124" class="col-type">BIGINT</text>
+      <text x="600" y="124" class="col-badge pk-badge">PK · AI</text>
+
+      <text x="446" y="154" class="col-name">title</text>
+      <text x="490" y="154" class="col-type">VARCHAR(100)</text>
+
+      <text x="446" y="184" class="col-name">content</text>
+      <text x="490" y="184" class="col-type">TEXT</text>
+      <text x="600" y="184" class="col-badge" fill="rgba(240,232,240,0.3)">NN</text>
+
+      <text x="446" y="214" class="col-name">mood_type</text>
+      <text x="490" y="214" class="col-type">VARCHAR(50)</text>
+      <text x="600" y="214" class="col-badge" fill="rgba(240,232,240,0.3)">NN</text>
+
+      <text x="446" y="244" class="col-name">mood_intensity</text>
+      <text x="490" y="244" class="col-type">INT</text>
+      <text x="600" y="244" class="col-badge" fill="rgba(240,232,240,0.3)">1–10</text>
+
+      <text x="446" y="274" class="col-name">created_at</text>
+      <text x="490" y="274" class="col-type">TIMESTAMP</text>
+
+      <text x="446" y="304" class="col-name">updated_at</text>
+      <text x="490" y="304" class="col-type">TIMESTAMP</text>
+
+      <!-- row 8: user_id FK -->
+      <rect x="430" y="314" width="295" height="30" class="fk-bg"/>
+      <text x="446" y="334" class="col-name">user_id</text>
+      <text x="490" y="334" class="col-type">BIGINT</text>
+      <text x="600" y="334" class="col-badge fk-badge">FK · CASCADE</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════════════
+         TABLE: entry_responses   x=430 y=410 w=295
+         Rows: id, response_text, created_at, entry_id FK, prompt_id FK
+    ═══════════════════════════════════════════════════ -->
+    <g id="entry_responses">
+      <rect x="430" y="410" width="295" height="194" rx="8" class="tbl-bg tbl-border" stroke-width="1"/>
+      <rect x="430" y="410" width="295" height="44"  rx="8" class="tbl-hdr tbl-border" stroke-width="1"/>
+      <rect x="430" y="438" width="295" height="16"       class="tbl-hdr"/>
+      <text x="446" y="429" class="tbl-title" fill="#ffb6d3">entry_responses</text>
+      <text x="446" y="444" class="tbl-schema hdr-schema">MySQL · InnoDB</text>
+
+      <line x1="430" y1="454" x2="725" y2="454" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="484" x2="725" y2="484" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="514" x2="725" y2="514" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="544" x2="725" y2="544" class="row-sep" stroke-width="1"/>
+      <line x1="430" y1="574" x2="725" y2="574" class="row-sep" stroke-width="1"/>
+
+      <!-- row 1: id PK -->
+      <rect x="430" y="454" width="295" height="30" class="pk-bg"/>
+      <text x="446" y="474" class="col-name">id</text>
+      <text x="490" y="474" class="col-type">BIGINT</text>
+      <text x="600" y="474" class="col-badge pk-badge">PK · AI</text>
+
+      <text x="446" y="504" class="col-name">response_text</text>
+      <text x="490" y="504" class="col-type">TEXT</text>
+
+      <text x="446" y="534" class="col-name">created_at</text>
+      <text x="490" y="534" class="col-type">TIMESTAMP</text>
+
+      <!-- row 4: entry_id FK -->
+      <rect x="430" y="544" width="295" height="30" class="fk-bg"/>
+      <text x="446" y="564" class="col-name">entry_id</text>
+      <text x="490" y="564" class="col-type">BIGINT</text>
+      <text x="600" y="564" class="col-badge fk-badge">FK · CASCADE</text>
+
+      <!-- row 5: prompt_id FK -->
+      <rect x="430" y="574" width="295" height="30" class="fk-bg"/>
+      <text x="446" y="594" class="col-name">prompt_id</text>
+      <text x="490" y="594" class="col-type">BIGINT</text>
+      <text x="600" y="594" class="col-badge fk-badge">FK · CASCADE</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════════════
+         TABLE: prompts   x=840 y=410 w=260
+         Rows: id, question, created_at
+    ═══════════════════════════════════════════════════ -->
+    <g id="prompts">
+      <rect x="840" y="410" width="260" height="164" rx="8" class="tbl-bg tbl-border" stroke-width="1"/>
+      <rect x="840" y="410" width="260" height="44"  rx="8" class="tbl-hdr tbl-border" stroke-width="1"/>
+      <rect x="840" y="438" width="260" height="16"       class="tbl-hdr"/>
+      <text x="856" y="429" class="tbl-title" fill="#ffb6d3">prompts</text>
+      <text x="856" y="444" class="tbl-schema hdr-schema">MySQL · InnoDB</text>
+
+      <line x1="840" y1="454" x2="1100" y2="454" class="row-sep" stroke-width="1"/>
+      <line x1="840" y1="484" x2="1100" y2="484" class="row-sep" stroke-width="1"/>
+      <line x1="840" y1="514" x2="1100" y2="514" class="row-sep" stroke-width="1"/>
+      <line x1="840" y1="544" x2="1100" y2="544" class="row-sep" stroke-width="1"/>
+
+      <!-- row 1: id PK -->
+      <rect x="840" y="454" width="260" height="30" class="pk-bg"/>
+      <text x="856" y="474" class="col-name">id</text>
+      <text x="890" y="474" class="col-type">BIGINT</text>
+      <text x="1000" y="474" class="col-badge pk-badge">PK · AI</text>
+
+      <text x="856" y="504" class="col-name">question</text>
+      <text x="890" y="504" class="col-type">TEXT</text>
+      <text x="1000" y="504" class="col-badge" fill="rgba(240,232,240,0.3)">NN</text>
+
+      <text x="856" y="534" class="col-name">created_at</text>
+      <text x="890" y="534" class="col-type">TIMESTAMP</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════════════
+         RELATIONSHIP 1: users(1) ──── journal_entries(N)
+         Horizontal line at y=202 from x=275 to x=430
+    ═══════════════════════════════════════════════════ -->
+    <!-- connecting line -->
+    <line x1="285" y1="202" x2="418" y2="202" class="rel-line" stroke-width="1.4" stroke-dasharray="5 3"/>
+    <!-- "1" end: single perpendicular bar at users right edge -->
+    <line x1="278" y1="194" x2="278" y2="210" class="rel-line" stroke-width="1.8"/>
+    <!-- "N" end: crow's foot at journal_entries left edge -->
+    <!-- three lines from apex (418,202) fanning to (430,194), (430,202), (430,210) -->
+    <line x1="418" y1="202" x2="430" y2="194" class="rel-line" stroke-width="1.5"/>
+    <line x1="418" y1="202" x2="430" y2="202" class="rel-line" stroke-width="1.5"/>
+    <line x1="418" y1="202" x2="430" y2="210" class="rel-line" stroke-width="1.5"/>
+    <!-- labels -->
+    <text x="271" y="190" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#c9a96e">1</text>
+    <text x="432" y="190" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#cce9d6">N</text>
+    <text x="330" y="196" font-family="'DM Sans',sans-serif" font-size="9" fill="rgba(255,182,211,0.4)" text-anchor="middle">user_id</text>
+
+    <!-- ══════════════════════════════════════════════════
+         RELATIONSHIP 2: journal_entries(1) ──── entry_responses(N)
+         Vertical line at x=577 from y=344 to y=410
+    ═══════════════════════════════════════════════════ -->
+    <line x1="577" y1="352" x2="577" y2="398" class="rel-line" stroke-width="1.4" stroke-dasharray="5 3"/>
+    <!-- "1" end: horizontal bar at journal_entries bottom -->
+    <line x1="569" y1="348" x2="585" y2="348" class="rel-line" stroke-width="1.8"/>
+    <!-- "N" end: crow's foot at entry_responses top -->
+    <!-- apex (577,398), lines to (569,410), (577,410), (585,410) -->
+    <line x1="577" y1="398" x2="569" y2="410" class="rel-line" stroke-width="1.5"/>
+    <line x1="577" y1="398" x2="577" y2="410" class="rel-line" stroke-width="1.5"/>
+    <line x1="577" y1="398" x2="585" y2="410" class="rel-line" stroke-width="1.5"/>
+    <!-- labels -->
+    <text x="583" y="352" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#c9a96e">1</text>
+    <text x="583" y="424" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#cce9d6">N</text>
+    <text x="593" y="382" font-family="'DM Sans',sans-serif" font-size="9" fill="rgba(255,182,211,0.4)">entry_id</text>
+
+    <!-- ══════════════════════════════════════════════════
+         RELATIONSHIP 3: prompts(1) ──── entry_responses(N)
+         L-shape: (840,469) → (790,469) → (790,589) → (738,589)
+         prompts.id center y=469, entry_responses.prompt_id center y=589
+    ═══════════════════════════════════════════════════ -->
+    <!-- L-shaped path segments -->
+    <line x1="834" y1="469" x2="790" y2="469" class="rel-line" stroke-width="1.4" stroke-dasharray="5 3"/>
+    <line x1="790" y1="469" x2="790" y2="589" class="rel-line" stroke-width="1.4" stroke-dasharray="5 3"/>
+    <line x1="790" y1="589" x2="738" y2="589" class="rel-line" stroke-width="1.4" stroke-dasharray="5 3"/>
+    <!-- "1" end: vertical bar at prompts left edge -->
+    <line x1="838" y1="461" x2="838" y2="477" class="rel-line" stroke-width="1.8"/>
+    <!-- "N" end: crow's foot at entry_responses right edge (pointing right into table) -->
+    <!-- apex (738,589), lines to (725,581), (725,589), (725,597) -->
+    <line x1="738" y1="589" x2="725" y2="581" class="rel-line" stroke-width="1.5"/>
+    <line x1="738" y1="589" x2="725" y2="589" class="rel-line" stroke-width="1.5"/>
+    <line x1="738" y1="589" x2="725" y2="597" class="rel-line" stroke-width="1.5"/>
+    <!-- labels -->
+    <text x="841" y="459" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#c9a96e">1</text>
+    <text x="708" y="587" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#cce9d6">N</text>
+    <text x="798" y="482" font-family="'DM Sans',sans-serif" font-size="9" fill="rgba(255,182,211,0.4)">prompt_id</text>
+
+    <!-- ══════ Cardinality annotations ═══════ -->
+    <text x="147" y="55"  font-family="'Cormorant Garamond',Georgia,serif" font-size="11" fill="rgba(255,182,211,0.3)" text-anchor="middle">users → journal_entries</text>
+    <text x="577" y="390" font-family="'Cormorant Garamond',Georgia,serif" font-size="11" fill="rgba(255,182,211,0.3)" text-anchor="middle">1 : N</text>
+
+  </svg>
+  </div><!-- /erd-wrap -->
+
+  <footer>Held · MySQL 8.0 Schema · Spring Data JPA · Hibernate · 2026</footer>
+</div>
+
+<script>
+  const btn = document.getElementById('toggle');
+  btn.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    btn.textContent = document.body.classList.contains('light') ? '◑ Dark Mode' : '◐ Light Mode';
+  });
+</script>
+</body>
+</html>

@@ -1,72 +1,49 @@
-// import React, { useEffect, useState } from "react";
-// import api from "../services/api.js";
-
-// export default function AdminPage() {
-//   const [users, setUsers] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     api
-//       .get("/api/admin/users")
-//       .then((res) => setUsers(res.data))
-//       .finally(() => setLoading(false));
-//   }, []);
-
-//   const handleDelete = async (id) => {
-//     if (!window.confirm("Delete this user?")) return;
-//     await api.delete(`/api/admin/users/${id}`);
-//     setUsers((u) => u.filter((user) => user.id !== id));
-//   };
-
-//   return (
-//     <div className="page">
-//       <h2>Admin Dashboard</h2>
-//       {loading ? (
-//         <div className="loading">Loading users...</div>
-//       ) : (
-//         <div className="admin-table-wrap card">
-//           <table className="admin-table">
-//             <thead>
-//               <tr>
-//                 <th>ID</th>
-//                 <th>Username</th>
-//                 <th>Email</th>
-//                 <th>Role</th>
-//                 <th>Actions</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {users.map((u) => (
-//                 <tr key={u.id}>
-//                   <td>{u.id}</td>
-//                   <td>{u.username}</td>
-//                   <td>{u.email}</td>
-//                   <td>
-//                     <span className={`role-tag ${u.role}`}>{u.role}</span>
-//                   </td>
-//                   <td>
-//                     <button
-//                       className="btn btn-danger btn-sm"
-//                       onClick={() => handleDelete(u.id)}
-//                     >
-//                       Delete
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
 import axios from "axios";
+
+export const TOKEN_STORAGE_KEYS = ["token", "jwt", "held_token"];
+export const USER_STORAGE_KEY = "held_user";
+
+export function getStoredToken() {
+  for (const key of TOKEN_STORAGE_KEYS) {
+    const value = localStorage.getItem(key);
+    if (value) return value;
+  }
+  return null;
+}
+
+export function clearStoredAuth() {
+  for (const key of TOKEN_STORAGE_KEYS) {
+    localStorage.removeItem(key);
+  }
+  localStorage.removeItem(USER_STORAGE_KEY);
+}
 
 const api = axios.create({
   baseURL: "http://localhost:8080",
-  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
 });
+
+api.interceptors.request.use(
+  (config) => {
+    const token = getStoredToken();
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      clearStoredAuth();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

@@ -37,6 +37,9 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JournalEntry> journalEntries;
 

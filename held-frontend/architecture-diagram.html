@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Held — System Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+
+:root {
+  --bg:        #1a0a12;
+  --bg2:       #200d17;
+  --text:      #f0e8f0;
+  --muted:     rgba(240,232,240,0.38);
+  --pink:      #ffb6d3;
+  --green:     #cce9d6;
+  --gold:      #c9a96e;
+  --card-bg:   rgba(255,255,255,0.025);
+  --card-border: rgba(255,182,211,0.22);
+  --line:      rgba(255,182,211,0.35);
+  --serif:     'Cormorant Garamond', Georgia, serif;
+  --sans:      'DM Sans', system-ui, sans-serif;
+}
+body.light {
+  --bg:        #f8f4f6;
+  --bg2:       #fff;
+  --text:      #1a0a12;
+  --muted:     rgba(26,10,18,0.45);
+  --pink:      #c24e78;
+  --green:     #2d7a4a;
+  --gold:      #8a5f1a;
+  --card-bg:   rgba(255,255,255,0.85);
+  --card-border: rgba(26,10,18,0.15);
+  --line:      rgba(194,78,120,0.45);
+}
+
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  transition: background .4s, color .4s;
+}
+
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+
+
+#toggle {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--pink);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.45rem 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all .3s;
+  z-index: 100;
+}
+#toggle:hover { background: rgba(255,182,211,0.08); }
+
+
+.eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  color: var(--pink);
+  opacity: .5;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 0.6rem;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  color: var(--pink);
+  text-align: center;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.4rem;
+}
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+.section-label::before,
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,182,211,0.18), transparent);
+}
+.section-label span {
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  color: var(--pink);
+  opacity: .45;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+.pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  row-gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+
+.node {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  width: 158px;
+  flex-shrink: 0;
+  transition: transform .3s, box-shadow .3s, background .4s, border-color .4s;
+}
+.node:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
+.node-icon { margin-bottom: 0.8rem; display: flex; justify-content: center; }
+.node-icon svg { width: 44px; height: 44px; }
+.node-name {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.node-sub {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 0.45rem;
+}
+.node-tech {
+  font-size: 0.57rem;
+  color: var(--muted);
+  opacity: .7;
+  line-height: 1.6;
+}
+
+
+.arrow-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 76px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+.arrow-label {
+  font-size: 0.57rem;
+  letter-spacing: 0.12em;
+  color: var(--line);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.arrow-svg line {
+  animation: dashFlow 1.7s linear infinite;
+}
+@keyframes dashFlow { to { stroke-dashoffset: -22; } }
+
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+.node:nth-child(1)  { animation: float 4.5s ease-in-out 0s     infinite; }
+.node:nth-child(3)  { animation: float 4.5s ease-in-out 0.3s   infinite; }
+.node:nth-child(5)  { animation: float 4.5s ease-in-out 0.6s   infinite; }
+.node:nth-child(7)  { animation: float 4.5s ease-in-out 0.9s   infinite; }
+
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+}
+.support-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  transition: background .4s, border-color .4s;
+}
+.support-card:hover { transform: translateY(-2px); }
+.support-name {
+  font-family: var(--serif);
+  font-size: 0.93rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.support-detail {
+  font-size: 0.62rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+
+footer {
+  text-align: center;
+  margin-top: 3rem;
+  font-size: 0.6rem;
+  color: var(--muted);
+  opacity: .55;
+  letter-spacing: 0.08em;
+}
+
+
+@media print {
+  body { background: #fff !important; color: #1a0a12 !important; }
+  #toggle { display: none; }
+  .node, .support-card { border-color: #ddd !important; background: #fff !important; box-shadow: none !important; animation: none !important; }
+  .arrow-svg line { animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<button id="toggle">◐ Light Mode</button>
+
+<div class="page">
+
+  <!-- Header -->
+  <p class="eyebrow">Capstone Project · 2026</p>
+  <h1>Held — System Architecture</h1>
+  <p class="subtitle">AWS Cloud Infrastructure · Spring Boot · React · MySQL</p>
+
+  <!-- Pipeline -->
+  <div class="section-label"><span>Request Flow</span></div>
+  <div class="pipeline">
+
+    <!-- User Browser -->
+    <div class="node">
+      <div class="node-icon">
+        <svg viewBox="0 0 44 44" fill="none">
+          <rect x="3" y="7" width="38" height="30" rx="4" stroke="#ffb6d3" stroke-width="1.6"/>
+          <line x1="3" y1="17" x2="41" y2="17" stroke="#ffb6d3" stroke-width="1.6"/>
+          <circle cx="9"  cy="12" r="2" fill="#ffb6d3" opacity=".75"/>
+          <circle cx="16" cy="12" r="2" fill="#ffb6d3" opacity=".75"/>
+          <circle cx="23" cy="12" r="2" fill="#ffb6d3" opacity=".75"/>
+          <rect x="8" y="22" width="28" height="11" rx="2" stroke="#ffb6d3" stroke-width="1" opacity=".3"/>
+          <line x1="8" y1="27" x2="36" y2="27" stroke="#ffb6d3" stroke-width="1" opacity=".3"/>
+        </svg>
+      </div>
+      <div class="node-name" style="color:#ffb6d3">User Browser</div>
+      <div class="node-sub">React SPA</div>
+      <div class="node-tech">Chrome · Safari · Firefox</div>
+    </div>
+
+    <!-- Arrow 1 -->
+    <div class="arrow-wrap">
+      <div class="arrow-label">HTTPS/CDN</div>
+      <svg class="arrow-svg" width="76" height="26" viewBox="0 0 76 26" style="overflow:visible">
+        <defs>
+          <marker id="ah1" markerWidth="7" markerHeight="6" refX="5" refY="3" orient="auto">
+            <polygon points="0 0,7 3,0 6" fill="#ffb6d3" opacity=".6"/>
+          </marker>
+        </defs>
+        <line x1="4" y1="13" x2="62" y2="13" stroke="#ffb6d3" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ah1)"/>
+      </svg>
+    </div>
+
+    <!-- AWS S3 -->
+    <div class="node">
+      <div class="node-icon">
+        <svg viewBox="0 0 44 44" fill="none">
+          <path d="M10 24C10 29 15.5 33 22 33C28.5 33 34 29 34 24L34 21C34 16 28.5 12 22 12C15.5 12 10 16 10 21Z" stroke="#ffb6d3" stroke-width="1.6" fill="#ffb6d318"/>
+          <ellipse cx="22" cy="12" rx="12" ry="4.5" stroke="#ffb6d3" stroke-width="1.6" fill="#ffb6d310"/>
+          <ellipse cx="22" cy="21" rx="12" ry="4.5" stroke="#ffb6d3" stroke-width="1" stroke-dasharray="4 2" fill="none" opacity=".5"/>
+          <path d="M16 7C16 4.5 18.7 3 22 3C25.3 3 28 4.5 28 7L28 12" stroke="#ffb6d3" stroke-width="1.5" stroke-linecap="round"/>
+          <polyline points="18,5.5 22,3 26,5.5" stroke="#ffb6d3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="node-name" style="color:#ffb6d3">AWS S3</div>
+      <div class="node-sub">Static Hosting</div>
+      <div class="node-tech">Vite Build · CDN Assets</div>
+    </div>
+
+    <!-- Arrow 2 -->
+    <div class="arrow-wrap">
+      <div class="arrow-label">REST API</div>
+      <svg class="arrow-svg" width="76" height="26" viewBox="0 0 76 26" style="overflow:visible">
+        <defs>
+          <marker id="ah2" markerWidth="7" markerHeight="6" refX="5" refY="3" orient="auto">
+            <polygon points="0 0,7 3,0 6" fill="#cce9d6" opacity=".6"/>
+          </marker>
+        </defs>
+        <line x1="4" y1="13" x2="62" y2="13" stroke="#cce9d6" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ah2)"/>
+      </svg>
+    </div>
+
+    <!-- AWS EC2 -->
+    <div class="node">
+      <div class="node-icon">
+        <svg viewBox="0 0 44 44" fill="none">
+          <rect x="5"  y="7"  width="34" height="13" rx="3" stroke="#cce9d6" stroke-width="1.6" fill="#cce9d610"/>
+          <rect x="5"  y="24" width="34" height="13" rx="3" stroke="#cce9d6" stroke-width="1.6" fill="#cce9d610"/>
+          <circle cx="12" cy="13.5" r="2.2" fill="#cce9d6" opacity=".65"/>
+          <rect x="18" y="10" width="17" height="7" rx="1.5" stroke="#cce9d6" stroke-width="1" opacity=".3"/>
+          <circle cx="12" cy="30.5" r="2.2" fill="#cce9d6" opacity=".65"/>
+          <rect x="18" y="27" width="17" height="7" rx="1.5" stroke="#cce9d6" stroke-width="1" opacity=".3"/>
+        </svg>
+      </div>
+      <div class="node-name" style="color:#cce9d6">AWS EC2</div>
+      <div class="node-sub">Spring Boot API</div>
+      <div class="node-tech">Java 17 · JWT · Port 8080</div>
+    </div>
+
+    <!-- Arrow 3 -->
+    <div class="arrow-wrap">
+      <div class="arrow-label">JDBC/JPA</div>
+      <svg class="arrow-svg" width="76" height="26" viewBox="0 0 76 26" style="overflow:visible">
+        <defs>
+          <marker id="ah3" markerWidth="7" markerHeight="6" refX="5" refY="3" orient="auto">
+            <polygon points="0 0,7 3,0 6" fill="#c9a96e" opacity=".6"/>
+          </marker>
+        </defs>
+        <line x1="4" y1="13" x2="62" y2="13" stroke="#c9a96e" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ah3)"/>
+      </svg>
+    </div>
+
+    <!-- AWS RDS -->
+    <div class="node">
+      <div class="node-icon">
+        <svg viewBox="0 0 44 44" fill="none">
+          <ellipse cx="22" cy="12" rx="15" ry="5.5" stroke="#c9a96e" stroke-width="1.6" fill="#c9a96e16"/>
+          <path d="M7 12L7 32C7 35.3 14 38 22 38C30 38 37 35.3 37 32L37 12" stroke="#c9a96e" stroke-width="1.6" fill="none"/>
+          <ellipse cx="22" cy="22" rx="15" ry="5.5" stroke="#c9a96e" stroke-width="1" stroke-dasharray="4 2" fill="none" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="node-name" style="color:#c9a96e">AWS RDS</div>
+      <div class="node-sub">MySQL Database</div>
+      <div class="node-tech">MySQL 8.0 · JPA/Hibernate</div>
+    </div>
+
+  </div><!-- /pipeline -->
+
+  <!-- Supporting services -->
+  <div class="section-label"><span>Supporting Infrastructure</span></div>
+  <div class="support-grid">
+
+    <div class="support-card">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <path d="M15 3L27 8.5L27 16C27 22.5 21.5 28 15 30C8.5 28 3 22.5 3 16L3 8.5Z" stroke="#ffb6d3" stroke-width="1.5" fill="#ffb6d314"/>
+        <circle cx="15" cy="14" r="3.8" stroke="#ffb6d3" stroke-width="1.3"/>
+        <path d="M8.5 25C10 21.5 12.3 19.5 15 19.5C17.7 19.5 20 21.5 21.5 25" stroke="#ffb6d3" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div>
+        <div class="support-name" style="color:#ffb6d3">AWS IAM</div>
+        <div class="support-detail">Roles &amp; Access Control</div>
+      </div>
+    </div>
+
+    <div class="support-card">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <rect x="9" y="3" width="12" height="12" rx="6" stroke="#ffb6d3" stroke-width="1.5" fill="#ffb6d314"/>
+        <rect x="3" y="18" width="24" height="9" rx="3" stroke="#ffb6d3" stroke-width="1.5" fill="#ffb6d310"/>
+        <circle cx="15" cy="22.5" r="2" fill="#ffb6d3" opacity=".7"/>
+        <line x1="15" y1="24.5" x2="15" y2="26" stroke="#ffb6d3" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="support-name" style="color:#ffb6d3">AWS SSM</div>
+        <div class="support-detail">Parameter Store · Secrets</div>
+      </div>
+    </div>
+
+    <div class="support-card">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <rect x="2" y="3" width="26" height="24" rx="3" stroke="#cce9d6" stroke-width="1.5" fill="#cce9d608"/>
+        <polyline points="5,22 10,13 14,18 18,8 22,16 26,11" stroke="#cce9d6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <div class="support-name" style="color:#cce9d6">AWS CloudWatch</div>
+        <div class="support-detail">Logs · Metrics · Alarms</div>
+      </div>
+    </div>
+
+    <div class="support-card">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <circle cx="5"  cy="15" r="3.2" stroke="#c9a96e" stroke-width="1.4" fill="#c9a96e14"/>
+        <circle cx="15" cy="7"  r="3.2" stroke="#c9a96e" stroke-width="1.4" fill="#c9a96e14"/>
+        <circle cx="15" cy="23" r="3.2" stroke="#c9a96e" stroke-width="1.4" fill="#c9a96e14"/>
+        <circle cx="25" cy="15" r="3.2" stroke="#c9a96e" stroke-width="1.4" fill="#c9a96e14"/>
+        <line x1="8.2"  y1="15"   x2="11.8" y2="15"   stroke="#c9a96e" stroke-width="1.3"/>
+        <line x1="17.8" y1="9.3"  x2="22.5" y2="13"   stroke="#c9a96e" stroke-width="1.3"/>
+        <line x1="17.8" y1="20.7" x2="22.5" y2="17"   stroke="#c9a96e" stroke-width="1.3"/>
+      </svg>
+      <div>
+        <div class="support-name" style="color:#c9a96e">AWS CodePipeline</div>
+        <div class="support-detail">CI/CD · Auto Deploy</div>
+      </div>
+    </div>
+
+  </div><!-- /support-grid -->
+
+  <footer>Held · Wellness Journaling Platform · AWS Hosted · Spring Boot + React + MySQL</footer>
+
+</div><!-- /page -->
+
+<script>
+  const btn = document.getElementById('toggle');
+  btn.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    btn.textContent = document.body.classList.contains('light') ? '◑ Dark Mode' : '◐ Light Mode';
+  });
+</script>
+</body>
+</html>

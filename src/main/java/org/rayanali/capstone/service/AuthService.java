@@ -33,7 +33,6 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email is already registered");
         }
-
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException("Username is already taken");
         }
@@ -44,10 +43,16 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
 
-        userRepository.save(user);
+        User saved = userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return new AuthResponse(token, user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole());
+        return new AuthResponse(
+                saved.getId(),
+                token,
+                saved.getEmail(),
+                saved.getRole(),
+                saved.getUsername()
+        );
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -60,6 +65,12 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return new AuthResponse(token, user.getEmail(), user.getRole());
+        return new AuthResponse(
+                user.getId(),
+                token,
+                user.getEmail(),
+                user.getRole(),
+                user.getUsername()
+        );
     }
 }

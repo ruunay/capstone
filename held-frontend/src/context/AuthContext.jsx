@@ -1,49 +1,67 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useState } from "react";
+import api, {
+  clearStoredAuth,
+  getStoredToken,
+  USER_STORAGE_KEY,
+} from "../services/api.js";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+function getStoredUser() {
+  const rawUser = localStorage.getItem(USER_STORAGE_KEY);
+  if (!rawUser) return null;
 
-  useEffect(() => {
-    const t = localStorage.getItem("held_token");
-    const u = localStorage.getItem("held_user");
-    if (t) {
-      setToken(t);
-      setUser(u ? JSON.parse(u) : null);
-    }
-    setLoading(false);
-  }, []);
+  try {
+    return JSON.parse(rawUser);
+  } catch {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return null;
+  }
+}
+
+function persistAuth(data) {
+  const token = data?.token;
+  if (!token) return;
+
+  localStorage.setItem("token", token);
+  localStorage.removeItem("jwt");
+  localStorage.removeItem("held_token");
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data));
+  localStorage.setItem(
+    "held_redirect",
+    data.role === "ADMIN" ? "/admin" : "/dashboard"
+  );
+}
+
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(() => getStoredToken());
+  const [user, setUser] = useState(() => getStoredUser());
+  const loading = false;
 
   const login = async (email, password) => {
-    const res = await axios.post("http://localhost:8080/api/auth/login", {
+    const res = await api.post("/api/auth/login", {
       email,
       password,
     });
-    const t = res.data?.token;
-    if (t) {
-      setToken(t);
+
+    const storedToken = res.data?.token;
+    if (storedToken) {
+      persistAuth(res.data);
+      setToken(storedToken);
       setUser(res.data);
-      localStorage.setItem("held_token", t);
-      localStorage.setItem("held_user", JSON.stringify(res.data));
     }
     return res.data;
   };
 
   const register = async (payload) => {
-    const res = await axios.post(
-      "http://localhost:8080/api/auth/register",
-      payload
-    );
-    const t = res.data?.token;
-    if (t) {
-      setToken(t);
+    const res = await api.post("/api/auth/register", payload);
+
+    const storedToken = res.data?.token;
+    if (storedToken) {
+      persistAuth(res.data);
+      setToken(storedToken);
       setUser(res.data);
-      localStorage.setItem("held_token", t);
-      localStorage.setItem("held_user", JSON.stringify(res.data));
     }
     return res.data;
   };
@@ -51,12 +69,16 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("held_token");
-    localStorage.removeItem("held_user");
+    clearStoredAuth();
+    localStorage.removeItem("held_redirect");
   };
 
+  const getUserId = () => user?.id || null;
+
   return (
-    <AuthContext.Provider value={{ token, user, login, register, logout, loading }}>
+    <AuthContext.Provider
+      value={{ token, user, login, register, logout, loading, getUserId }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,19 +1,169 @@
-.journal-book {
-  height: 400px;
-  position: relative;
+.book-wrapper {
+  width: 100%;
+  min-height: 520px;
+  perspective: 1500px;
 }
 
+/* ── Closed cover ── */
 .book-cover {
-  background: teal;
-  color: white;
-  height: 100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  cursor:pointer;
+  width: 100%;
+  height: 520px;
+  background: linear-gradient(145deg, #d4788e, var(--pink-dark));
+  border-radius: 4px 16px 16px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    -6px 6px 24px rgba(0, 0, 0, 0.22),
+    inset -3px 0 10px rgba(0, 0, 0, 0.12),
+    inset 2px 0 6px rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.pages {
-  background: white;
-  padding: 20px;
+/* spine shadow */
+.book-cover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.2), transparent);
+  border-radius: 4px 0 0 4px;
+}
+
+/* subtle texture stripes */
+.book-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 28px,
+    rgba(255, 255, 255, 0.04) 28px,
+    rgba(255, 255, 255, 0.04) 29px
+  );
+}
+
+.book-cover:hover {
+  transform: translateY(-5px) rotate(-1.5deg);
+  box-shadow:
+    -10px 14px 36px rgba(0, 0, 0, 0.28),
+    inset -3px 0 10px rgba(0, 0, 0, 0.12);
+}
+
+.book-cover-inner {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+
+.book-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.4rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.book-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 3rem;
+}
+
+.book-hint {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  opacity: 0.55;
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+
+/* ── Open spread ── */
+.book-open {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 520px;
+  border-radius: 4px 8px 8px 4px;
+  box-shadow:
+    -4px 6px 24px rgba(0, 0, 0, 0.14),
+    4px 6px 24px rgba(0, 0, 0, 0.08);
+  animation: bookOpen 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: left center;
+}
+
+@keyframes bookOpen {
+  from {
+    opacity: 0;
+    transform: rotateY(-18deg) scaleX(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0deg) scaleX(1);
+  }
+}
+
+.book-page {
+  padding: 2.5rem 2rem;
+}
+
+/* Left decorative page */
+.left-page {
+  background: #fdf3ee;
+  border-right: 1.5px solid var(--border);
+  border-radius: 4px 0 0 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* centre-spine glow */
+.left-page::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 182, 211, 0.5) 40%,
+    rgba(255, 182, 211, 0.5) 60%,
+    transparent
+  );
+}
+
+.right-page {
+  background: #fffcfd;
+  border-radius: 0 8px 8px 0;
+}
+
+.page-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 1.55rem;
+  padding-top: 0.25rem;
+}
+
+.page-line {
+  height: 1px;
+  background: rgba(168, 212, 184, 0.45);
+  border-radius: 1px;
+}
+
+.book-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
